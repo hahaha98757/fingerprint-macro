@@ -8,9 +8,7 @@ plugins {
 group = "kr.hahaha98757"
 version = "1.0.0"
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
+java { toolchain.languageVersion.set(JavaLanguageVersion.of(17)) }
 
 repositories {
     mavenCentral()
@@ -22,18 +20,29 @@ dependencies {
     implementation("com.github.kwhat:jnativehook:2.2.2")
 }
 
-val buildFolder = file("${layout.buildDirectory.locationOnly.get()}/libs/FingerprintMacro-v$version")
+tasks.named<Jar>("jar") { isEnabled = false }
 
 tasks.named<ShadowJar>("shadowJar") {
-    destinationDirectory.set(buildFolder)
     archiveBaseName.set("FingerprintMacro")
-    archiveVersion.set("")
     archiveClassifier.set("")
     manifest { attributes["Main-Class"] = "kr.hahaha98757.fingerprintmacro.MainKt" }
-    finalizedBy("copyResources")
 }
 
-tasks.register<Copy>("copyResources") {
-    from("resources")
-    into(buildFolder)
+tasks.register<Exec>("packageExe") {
+    commandLine(
+        "jpackage",
+        "--type", "app-image",
+        "--input", "build/libs",
+        "--name", "FingerprintMacro-$version",
+        "--main-jar", "FingerprintMacro-$version.jar",
+        "--icon", "icon.ico",
+        "--dest", "build/jpackage",
+        "--win-console"
+    )
+    doLast { file("build/jpackage/FingerprintMacro-$version/FingerprintMacro-$version.ico").delete() }
+}
+
+tasks.named("build") {
+    dependsOn("shadowJar")
+    finalizedBy("packageExe")
 }

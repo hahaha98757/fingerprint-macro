@@ -17,12 +17,6 @@ import kotlin.math.abs
 object Feature {
     private lateinit var hWnd: HWND
     private val patterns = (1..16).map { ImageIO.read(Feature::class.java.getResourceAsStream("/patterns/$it.png")) }.toTypedArray()
-    private var debug = false
-
-    fun toggleDebug() {
-        debug = !debug
-        println("디버그 모드를 ${if (debug) "켰" else "껐"}습니다.")
-    }
 
     fun init(hWnd: HWND) {
         try {
@@ -32,35 +26,35 @@ object Feature {
         }
     }
 
-    fun run() {
+    fun run(first: Boolean = false) {
         val screen = getScreenshot()
-        if (debug) createPngImage(screen, File("debug/screenshot.png"))
+        if (Setting.debugMode && !first) createPngImage(screen, "debug/screenshot.png")
 
-        val patternWidth = 116 //이미지 크기
-        val patternHeight = 116
+        val pieceWidth = 116 //이미지 크기
+        val pieceHeight = 116
         val startX = 476 //시작 좌표
         val startY = 272
         val gapX = 144 //이미지 간 간격
         val gapY = 144
 
         val result = mutableListOf<Boolean>()
-
-        var imgNum = 1
+        var imageNo = 1
 
         for (row in 0 until 4) for (col in 0 until 2) {
             val x = startX + col * gapX
             val y = startY + row * gapY
-            val subImage = screen.getSubimage(x, y, patternWidth, patternHeight)
-            if (debug) createPngImage(subImage, File("debug/patterns/${imgNum++}.png"))
-            result.add(matchesAnyPattern(subImage))
+            val piece = screen.getSubimage(x, y, pieceWidth, pieceHeight)
+            if (Setting.debugMode && !first) createPngImage(piece, "debug/pieces/${imageNo++}.png")
+            result.add(matchesAnyPattern(piece))
         }
 
-        if (debug) for ((i, b) in result.withIndex()) if (i % 2 == 0) print("$b    ") else println(b)
+        if (Setting.debugMode && !first) for ((i, b) in result.withIndex()) if (i % 2 == 0) print("$b    ") else println(b)
 
         var t = 0
         for (b in result) if (b) t++
         if (t != 4) return
 
+        if (first) return
         var enter = 0
         val robot = Robot()
         var skip = false
@@ -70,29 +64,19 @@ object Feature {
                 continue
             }
             if (b) {
-                robot.keyPress(KeyEvent.VK_ENTER)
-                robot.keyRelease(KeyEvent.VK_ENTER)
-                if (debug) print("enter ")
+                robot.inputKey(KeyEvent.VK_ENTER)
                 enter++
             }
             if (i == 15 || enter == 4) {
-                robot.keyPress(KeyEvent.VK_TAB)
-                robot.keyRelease(KeyEvent.VK_TAB)
-                if (debug) print("tab ")
+                robot.inputKey(KeyEvent.VK_TAB)
                 break
             }
             if (!result[i+1]) {
                 skip = true
-                robot.keyPress(KeyEvent.VK_DOWN)
-                robot.keyRelease(KeyEvent.VK_DOWN)
-                if (debug) print("down ")
-            } else {
-                robot.keyPress(KeyEvent.VK_RIGHT)
-                robot.keyRelease(KeyEvent.VK_RIGHT)
-                if (debug) print("right ")
-            }
+                robot.inputKey(KeyEvent.VK_DOWN)
+            } else robot.inputKey(KeyEvent.VK_RIGHT)
         }
-        if (debug) println()
+        if (Setting.debugMode) println()
     }
 
     private fun matchesAnyPattern(target: BufferedImage) = patterns.any { template -> imagesAreSimilarHSV(template, target, tolerance = 30, threshold = 0.8f) }
@@ -139,8 +123,8 @@ object Feature {
         return robot.createScreenCapture(Rectangle(rect.left, rect.top, width, height))
     }
 
-    private fun createPngImage(image: BufferedImage, file: File) {
-        val realFile = File(Feature::class.java.protectionDomain.codeSource.location.toURI().toPath().parent.pathString, file.path)
+    private fun createPngImage(image: BufferedImage, path: String) {
+        val realFile = File(Feature::class.java.protectionDomain.codeSource.location.toURI().toPath().parent.pathString, path)
         if (!realFile.exists()) realFile.mkdirs()
         ImageIO.write(image, "png", realFile)
     }
