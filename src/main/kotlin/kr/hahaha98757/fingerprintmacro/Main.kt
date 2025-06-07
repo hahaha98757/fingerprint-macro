@@ -16,7 +16,6 @@ import java.io.InputStreamReader
 import java.util.logging.Level
 import java.util.logging.LogManager
 import java.util.logging.Logger
-import javax.sound.sampled.AudioSystem
 import kotlin.system.exitProcess
 
 @Volatile
@@ -24,7 +23,7 @@ var stop = false
 
 fun main() {
     println("Copyright (c) 2025 hahaha98757 (MIT License)")
-    println("Fingerprint Macro v1.0.0")
+    println("Fingerprint Macro v1.1.0")
     println("공식 사이트: https://github.com/hahaha98757/fingerprint-macro")
     println()
     Thread.sleep(1000)
@@ -48,6 +47,7 @@ fun main() {
 
         if (pid == target) {
             println("게임 발견. (PID: $pid)")
+            playTone(1000.0, 200, 0.5)
             Feature.init(hWnd)
             return@EnumWindows false
         }
@@ -82,14 +82,7 @@ fun main() {
                     }
                     Setting.test -> {
                         println("테스트를 시작합니다.")
-                        Thread {
-                            val audioInputStream = AudioSystem.getAudioInputStream(object {}::class.java.classLoader.getResource("beep.wav"))
-                            val clip = AudioSystem.getClip()
-                            clip.open(audioInputStream)
-                            clip.start()
-                            Thread.sleep(clip.microsecondLength / 1000)
-                            clip.close()
-                        }.start()
+                        playTone(1000.0, 200, 0.5)
                     }
                 }
             }
@@ -122,6 +115,7 @@ fun getPid(): Int {
     return -1
 }
 
+@Suppress("SpellCheckingInspection")
 interface Psapi: Library {
     @Suppress("FunctionName")
     fun GetModuleBaseNameW(hProcess: WinNT.HANDLE, hModule: Pointer?, lpBaseName: CharArray, nSize: Int): Int
