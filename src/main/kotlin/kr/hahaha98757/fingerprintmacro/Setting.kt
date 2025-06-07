@@ -26,7 +26,7 @@ object Setting {
 
         val file = File(File(Setting::class.java.protectionDomain.codeSource.location.toURI()).parentFile, "setting.ini")
         if (!file.exists()) {
-            file.mkdirs()
+            file.createNewFile()
             file.writeText("""
                 # 키의 이름은 https://javadoc.io/static/com.1stleg/jnativehook/2.1.0/org/jnativehook/keyboard/NativeKeyEvent.html 에서 'VC_' 뒤의 이름을 "있는 그대로" 사용합니다.
                 [general]

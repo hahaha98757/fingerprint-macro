@@ -33,11 +33,13 @@ GTA 온라인의 지문 매크로입니다.
 - java-native-access의 [JNA](https://github.com/java-native-access/jna/tree/5.17.0) ([아파치 라이선스 2.0](https://github.com/java-native-access/jna/blob/5.17.0/AL2.0))
 - kwhat의 [JNativeHook](https://github.com/kwhat/jnativehook/tree/2.2.2) ([GNU 약소 일반 공중 사용 허가서 v3.0](licenses/JNativeHook-LICENSE))
 - JetBrains의 [Kotlin](https://github.com/JetBrains/kotlin) ([아파치 라이선스 2.0](https://github.com/JetBrains/kotlin/blob/master/license/LICENSE.txt))
-- [beep.wav](src/main/resources/beep.wav): Mixkit의 [Censorship beep](https://mixkit.co/free-sound-effects/beep/) ([Sound Effects Free License](https://mixkit.co/license/#sfxFree))
 
 ----
 
 ## 업데이트 로그
+
+### 1.1.0
+- 버그 수정.
 
 ### 1.0.0
 - 매크로 개발.
