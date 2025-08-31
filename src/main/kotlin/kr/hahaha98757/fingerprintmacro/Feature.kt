@@ -19,11 +19,7 @@ object Feature {
     private val patterns = (1..16).map { ImageIO.read(Feature::class.java.getResourceAsStream("/patterns/$it.png")) }.toTypedArray()
 
     fun init(hWnd: HWND) {
-        try {
-            Feature.hWnd = hWnd
-        } catch (e: Exception) {
-            throw ExceptionInInitializerError(e)
-        }
+        Feature.hWnd = hWnd
     }
 
     fun run(first: Boolean = false) {
@@ -45,25 +41,25 @@ object Feature {
             val y = startY + row * gapY
             val piece = screen.getSubimage(x, y, pieceWidth, pieceHeight)
             if (Setting.debugMode && !first) createPngImage(piece, "debug/pieces/${imageNo++}.png")
-            result.add(matchesAnyPattern(piece))
+            result += matchesAnyPattern(piece)
         }
 
-        if (Setting.debugMode && !first) for ((i, b) in result.withIndex()) if (i % 2 == 0) print("$b    ") else println(b)
+        if (Setting.debugMode && !first) for ((i, bool) in result.withIndex()) if (i % 2 == 0) print("$bool    ") else println(bool)
 
-        var t = 0
-        for (b in result) if (b) t++
-        if (t != 4) return
+        var trueCount = 0
+        for (bool in result) if (bool) trueCount++
+        if (trueCount != 4) return
 
         if (first) return
         var enter = 0
         val robot = Robot()
         var skip = false
-        for ((i, b) in result.withIndex()) {
+        for ((i, bool) in result.withIndex()) {
             if (skip) {
                 skip = false
                 continue
             }
-            if (b) {
+            if (bool) {
                 robot.inputKey(KeyEvent.VK_ENTER)
                 enter++
             }
@@ -119,8 +115,7 @@ object Feature {
         val width = rect.right - rect.left
         val height = rect.bottom - rect.top
 
-        val robot = Robot()
-        return robot.createScreenCapture(Rectangle(rect.left, rect.top, width, height))
+        return Robot().createScreenCapture(Rectangle(rect.left, rect.top, width, height))
     }
 
     private fun createPngImage(image: BufferedImage, path: String) {

@@ -6,8 +6,8 @@ import java.io.File
 object Setting {
     var legacyMode = false
     var debugMode = false
-    var pressingTimes = 8L
-    var inputDelays = 8L
+    var pressingTimes = 20L
+    var inputDelays = 20L
     var exit = NativeKeyEvent.VC_F4
     var reload = NativeKeyEvent.VC_F5
     var start = NativeKeyEvent.VC_F6
@@ -17,8 +17,8 @@ object Setting {
         println("설정을 불러오는 중...")
         legacyMode = false
         debugMode = false
-        pressingTimes = 8L
-        inputDelays = 8L
+        pressingTimes = 20
+        inputDelays = 20
         exit = NativeKeyEvent.VC_F4
         reload = NativeKeyEvent.VC_F5
         start = NativeKeyEvent.VC_F6
@@ -32,8 +32,8 @@ object Setting {
                 [general]
                 legacyMode = false
                 debugMode = false
-                pressingTimes = 8
-                inputDelays = 8
+                pressingTimes = 20
+                inputDelays = 20
 
                 [hotkeys]
                 exit = F4
@@ -80,3 +80,15 @@ object Setting {
 }
 
 fun Int.getKeyText(): String = NativeKeyEvent.getKeyText(this)
+
+private fun getKeyCode(name: String): Int {
+    val fieldName = "VC_" + name.uppercase()
+    return try {
+        val field = NativeKeyEvent::class.java.getField(fieldName)
+        field.getInt(null)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        System.err.println("알 수 없는 키")
+        0
+    }
+}

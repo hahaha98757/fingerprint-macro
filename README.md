@@ -1,6 +1,7 @@
 # Fingerprint Macro
-GTA 온라인의 지문 매크로입니다.
+[다운로드](https://github.com/hahaha98757/fingerprint-macro/releases)
 
+GTA 온라인의 지문 매크로입니다.
 
 지원 정보<br>
 - 운영체제: Windows 10 64비트
@@ -37,6 +38,10 @@ GTA 온라인의 지문 매크로입니다.
 ----
 
 ## 업데이트 로그
+
+### 1.1.1
+- 코드 최적화.
+- pressingTimes와 inputDelays의 기본값을 8에서 20으로 변경.
 
 ### 1.1.0
 - 버그 수정.

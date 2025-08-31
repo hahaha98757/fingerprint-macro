@@ -18,15 +18,13 @@ import java.util.logging.LogManager
 import java.util.logging.Logger
 import kotlin.system.exitProcess
 
-@Volatile
-var stop = false
-
 fun main() {
     println("Copyright (c) 2025 hahaha98757 (MIT License)")
-    println("Fingerprint Macro v1.1.0")
+    println("Fingerprint Macro v1.1.1")
     println("공식 사이트: https://github.com/hahaha98757/fingerprint-macro")
     println()
     Thread.sleep(1000)
+
     Setting.loadSetting()
     val target = getPid()
     if (target == -1) {
@@ -90,9 +88,6 @@ fun main() {
                 pressedKeys.remove(event.keyCode)
             }
         })
-        @Suppress("ControlFlowWithEmptyBody")
-        while (!stop) {}
-        GlobalScreen.unregisterNativeHook()
     }.start()
     Feature.run(true)
 }
@@ -103,19 +98,16 @@ fun getPid(): Int {
     println("'$processName'를 찾는 중...")
     val process = ProcessBuilder("tasklist", "/fi", "imagename eq $processName", "/fo", "csv", "/nh").redirectErrorStream(true).start()
 
-    BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
-        val line = reader.readLine() ?: return -1
+    BufferedReader(InputStreamReader(process.inputStream)).use {
+        val line = it.readLine() ?: return -1
         if (line.isBlank() || line.contains("No tasks")) return -1
 
         val parts = line.split(",")
-        if (parts.size >= 2) {
-            return parts[1].replace("\"", "").toIntOrNull() ?: -1
-        }
+        if (parts.size >= 2) return parts[1].replace("\"", "").toIntOrNull() ?: -1
     }
     return -1
 }
 
-@Suppress("SpellCheckingInspection")
 interface Psapi: Library {
     @Suppress("FunctionName")
     fun GetModuleBaseNameW(hProcess: WinNT.HANDLE, hModule: Pointer?, lpBaseName: CharArray, nSize: Int): Int
