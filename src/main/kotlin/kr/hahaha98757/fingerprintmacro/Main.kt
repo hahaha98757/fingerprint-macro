@@ -45,7 +45,7 @@ fun main() {
 
         if (pid == target) {
             println("게임 발견. (PID: $pid)")
-            playTone(1000.0, 200, 0.5)
+            playTone(1000.0, 200, 0.1)
             Feature.init(hWnd)
             return@EnumWindows false
         }
@@ -80,7 +80,7 @@ fun main() {
                     }
                     Setting.test -> {
                         println("테스트를 시작합니다.")
-                        playTone(1000.0, 200, 0.5)
+                        playTone(1000.0, 200, 0.1)
                     }
                 }
             }
