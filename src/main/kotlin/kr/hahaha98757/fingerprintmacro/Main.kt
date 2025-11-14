@@ -20,7 +20,7 @@ import kotlin.system.exitProcess
 
 fun main() {
     println("Copyright (c) 2025 hahaha98757 (MIT License)")
-    println("Fingerprint Macro v1.1.1")
+    println("Fingerprint Macro v1.1.2")
     println("공식 사이트: https://github.com/hahaha98757/fingerprint-macro")
     println()
     Thread.sleep(1000)
