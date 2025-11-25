@@ -27,12 +27,12 @@ GTA 온라인의 지문 매크로입니다.
 - test: 키 입력을 테스트하는 단축키입니다.
 
 ## 라이선스
-이 프로젝트는 [LICENSE](LICENSE) 파일의 전문에 따라 MIT 허가서가 적용됩니다.
+이 프로젝트는 [LICENSE](LICENSE) 파일의 전문에 따라 MIT 라이선스가 적용됩니다.
 <br>라이선스 및 저작권 고지 하에 개인적 이용, 수정, 배포, 상업적 이용이 가능하며 보증 및 책임을 지지 않습니다.
 
 ## 크레딧
 - java-native-access의 [JNA](https://github.com/java-native-access/jna/tree/5.17.0) ([아파치 라이선스 2.0](https://github.com/java-native-access/jna/blob/5.17.0/AL2.0))
-- kwhat의 [JNativeHook](https://github.com/kwhat/jnativehook/tree/2.2.2) ([GNU 약소 일반 공중 사용 허가서 v3.0](licenses/JNativeHook-LICENSE))
+- kwhat의 [JNativeHook](https://github.com/kwhat/jnativehook/tree/2.2.2) ([GNU 약소 일반 공중 사용 라이선스 v3.0](licenses/JNativeHook-LICENSE))
 - JetBrains의 [Kotlin](https://github.com/JetBrains/kotlin) ([아파치 라이선스 2.0](https://github.com/JetBrains/kotlin/blob/master/license/LICENSE.txt))
 
 ----
