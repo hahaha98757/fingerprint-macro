@@ -17,12 +17,16 @@ import kotlin.math.abs
 object Feature {
     private lateinit var hWnd: HWND
     private val patterns = (1..16).map { ImageIO.read(Feature::class.java.getResourceAsStream("/patterns/$it.png")) }.toTypedArray()
+    @Volatile
+    var lock = false
 
     fun init(hWnd: HWND) {
         Feature.hWnd = hWnd
     }
 
     fun run(first: Boolean = false) {
+        if (lock) return
+        lock = true
         val screen = getScreenshot()
         if (Setting.debugMode && !first) createPngImage(screen, "debug/screenshot.png")
 
@@ -73,6 +77,7 @@ object Feature {
             } else robot.inputKey(KeyEvent.VK_RIGHT)
         }
         if (Setting.debugMode) println()
+        lock = false
     }
 
     private fun matchesAnyPattern(target: BufferedImage) = patterns.any { template -> imagesAreSimilarHSV(template, target, tolerance = 30, threshold = 0.8f) }

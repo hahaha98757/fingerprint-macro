@@ -75,6 +75,10 @@ fun main() {
                     }
                     Setting.reload -> Setting.loadSetting()
                     Setting.start -> {
+                        if (Feature.lock) {
+                            println("이미 매크로가 실행 중입니다.")
+                            return
+                        }
                         println("매크로를 시작합니다.")
                         Thread { Feature.run() }.start()
                     }
