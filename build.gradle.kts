@@ -13,8 +13,6 @@ repositories {
 }
 
 dependencies {
-    implementation("net.java.dev.jna:jna:5.17.0")
-    implementation("net.java.dev.jna:jna-platform:5.17.0")
     implementation("com.github.kwhat:jnativehook:2.2.2")
 }
 

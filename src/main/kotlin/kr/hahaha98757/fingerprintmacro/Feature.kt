@@ -1,62 +1,47 @@
 package kr.hahaha98757.fingerprintmacro
 
-import com.sun.jna.platform.win32.User32
-import com.sun.jna.platform.win32.WinDef
-import com.sun.jna.platform.win32.WinDef.HWND
+
 import java.awt.Color
-import java.awt.Rectangle
-import java.awt.Robot
+import java.awt.GraphicsEnvironment
 import java.awt.event.KeyEvent
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
-import kotlin.io.path.pathString
-import kotlin.io.path.toPath
 import kotlin.math.abs
 
 object Feature {
-    private lateinit var hWnd: HWND
     private val patterns = (1..16).map { ImageIO.read(Feature::class.java.getResourceAsStream("/patterns/$it.png")) }.toTypedArray()
-    @Volatile
-    var lock = false
 
-    fun init(hWnd: HWND) {
-        Feature.hWnd = hWnd
-    }
-
-    fun run(first: Boolean = false) {
+    fun run(test: Boolean = false) {
         if (lock) return
         lock = true
         val screen = getScreenshot()
-        if (Setting.debugMode && !first) createPngImage(screen, "debug/screenshot.png")
+        if (Setting.saveImages) createPngImage(screen, "images/screenshot.png")
 
-        val pieceWidth = 116 //이미지 크기
+        val pieceWidth = 116 // 조각 크기
         val pieceHeight = 116
-        val startX = 476 //시작 좌표
+        val startX = 476 // 조각 시작 좌표
         val startY = 272
-        val gapX = 144 //이미지 간 간격
+        val gapX = 144 // 조각 간 간격
         val gapY = 144
 
         val result = mutableListOf<Boolean>()
+        var count = 0
         var imageNo = 1
 
         for (row in 0 until 4) for (col in 0 until 2) {
             val x = startX + col * gapX
             val y = startY + row * gapY
             val piece = screen.getSubimage(x, y, pieceWidth, pieceHeight)
-            if (Setting.debugMode && !first) createPngImage(piece, "debug/pieces/${imageNo++}.png")
-            result += matchesAnyPattern(piece)
+            if (Setting.saveImages) createPngImage(piece, "images/pieces/${imageNo++}.png")
+            result += matchesAnyPattern(piece).also { if (it) count++ }
         }
 
-        if (Setting.debugMode && !first) for ((i, bool) in result.withIndex()) if (i % 2 == 0) print("$bool    ") else println(bool)
+        for ((i, bool) in result.withIndex()) if (i % 2 == 0) print("$bool    ") else println(bool)
 
-        var trueCount = 0
-        for (bool in result) if (bool) trueCount++
-        if (trueCount != 4) return
+        if (count != 4) return
 
-        if (first) return
         var enter = 0
-        val robot = Robot()
         var skip = false
         for ((i, bool) in result.withIndex()) {
             if (skip) {
@@ -64,19 +49,20 @@ object Feature {
                 continue
             }
             if (bool) {
-                robot.inputKey(KeyEvent.VK_ENTER)
+                inputKey(KeyEvent.VK_ENTER, test)
                 enter++
             }
-            if (i == 15 || enter == 4) {
-                robot.inputKey(KeyEvent.VK_TAB)
+            if (enter == 4) {
+                inputKey(KeyEvent.VK_TAB, test)
                 break
             }
             if (!result[i+1]) {
                 skip = true
-                robot.inputKey(KeyEvent.VK_DOWN)
-            } else robot.inputKey(KeyEvent.VK_RIGHT)
+                inputKey(KeyEvent.VK_DOWN, test)
+            } else inputKey(KeyEvent.VK_RIGHT, test)
         }
-        if (Setting.debugMode) println()
+        println()
+        println("매크로 실행 완료")
         lock = false
     }
 
@@ -115,17 +101,14 @@ object Feature {
     }
 
     private fun getScreenshot(): BufferedImage {
-        val rect = WinDef.RECT()
-        User32.INSTANCE.GetWindowRect(hWnd, rect)
-        val width = rect.right - rect.left
-        val height = rect.bottom - rect.top
-
-        return Robot().createScreenCapture(Rectangle(rect.left, rect.top, width, height))
+        val device = GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices[Setting.display - 1]
+        val bounds = device.defaultConfiguration.bounds
+        return robot.createScreenCapture(bounds)
     }
 
     private fun createPngImage(image: BufferedImage, path: String) {
-        val realFile = File(Feature::class.java.protectionDomain.codeSource.location.toURI().toPath().parent.pathString, path)
-        if (!realFile.exists()) realFile.mkdirs()
-        ImageIO.write(image, "png", realFile)
+        val file = File(root, path)
+        if (!file.exists()) file.mkdirs()
+        ImageIO.write(image, "png", file)
     }
 }

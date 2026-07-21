@@ -1,17 +1,27 @@
 package kr.hahaha98757.fingerprintmacro
 
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent
 import java.awt.Robot
+import java.io.File
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import kotlin.math.sin
 
-fun Robot.inputKey(keyCode: Int) {
-    keyPress(keyCode)
-    Thread.sleep(Setting.pressingTimes)
-    keyRelease(keyCode)
-    Thread.sleep(Setting.inputDelays)
-    if (Setting.debugMode) print(keyCode.getKeyText() + " ")
+val robot = Robot()
+
+val root = File(object {}::class.java.protectionDomain.codeSource.location.toURI()).parentFile!!
+
+fun inputKey(keyCode: Int, test: Boolean = false) {
+    if (!test) {
+        robot.keyPress(keyCode)
+        Thread.sleep(Setting.pressingTimes)
+        robot.keyRelease(keyCode)
+        Thread.sleep(Setting.inputDelays)
+    }
+    print("${keyCode.getKeyText()} ")
 }
+
+fun Int.getKeyText(): String = NativeKeyEvent.getKeyText(this)
 
 fun playTone(frequency: Double, durationMs: Int, volume: Double = 1.0) = Thread {
     val sampleRate = 44100f
@@ -32,3 +42,11 @@ fun playTone(frequency: Double, durationMs: Int, volume: Double = 1.0) = Thread 
     line.stop()
     line.close()
 }.start()
+
+fun isLockedAndPrint(): Boolean {
+    if (lock) {
+        println("이미 매크로가 실행 중이거나, 설정을 불러오는 중입니다.")
+        return true
+    }
+    return false
+}

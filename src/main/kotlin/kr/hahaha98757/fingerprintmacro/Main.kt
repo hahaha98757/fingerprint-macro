@@ -3,20 +3,13 @@ package kr.hahaha98757.fingerprintmacro
 import com.github.kwhat.jnativehook.GlobalScreen
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener
-import com.sun.jna.Library
-import com.sun.jna.Native
-import com.sun.jna.Pointer
-import com.sun.jna.platform.win32.Kernel32
-import com.sun.jna.platform.win32.User32
-import com.sun.jna.platform.win32.WinNT
-import com.sun.jna.ptr.IntByReference
-import com.sun.jna.win32.W32APIOptions
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.util.logging.Level
 import java.util.logging.LogManager
 import java.util.logging.Logger
 import kotlin.system.exitProcess
+
+@Volatile
+var lock = false
 
 fun main() {
     println("Copyright (c) 2025 hahaha98757 (MIT License)")
@@ -26,37 +19,14 @@ fun main() {
     Thread.sleep(1000)
 
     Setting.loadSetting()
-    val target = getPid()
-    if (target == -1) {
-        System.err.println("게임을 찾는데 실패했습니다.")
-        Thread.sleep(2000)
-        exitProcess(1)
-    }
-
-    User32.INSTANCE.EnumWindows({ hWnd, _ ->
-        val pidRef = IntByReference()
-        User32.INSTANCE.GetWindowThreadProcessId(hWnd, pidRef)
-        val pid = pidRef.value
-
-        val processHandle = Kernel32.INSTANCE.OpenProcess(WinNT.PROCESS_QUERY_INFORMATION or WinNT.PROCESS_VM_READ, false, pid) ?: return@EnumWindows true
-        val exeName = CharArray(512)
-        Psapi.INSTANCE.GetModuleBaseNameW(processHandle, null, exeName, 512)
-        Kernel32.INSTANCE.CloseHandle(processHandle)
-
-        if (pid == target) {
-            println("게임 발견. (PID: $pid)")
-            playTone(1000.0, 200, 0.1)
-            Feature.init(hWnd)
-            return@EnumWindows false
-        }
-        true
-    }, null)
 
     println()
     println("'${Setting.exit.getKeyText()}' 키를 눌러 매크로를 종료합니다.")
     println("'${Setting.reload.getKeyText()}' 키를 눌러 설정을 다시 불러옵니다.")
     println("'${Setting.start.getKeyText()}' 키를 눌러 매크로를 시작합니다.")
     println("'${Setting.test.getKeyText()}' 키를 눌러 테스트를 할 수 있습니다.")
+
+    playTone(1000.0, 200, 0.1)
 
     Thread {
         LogManager.getLogManager().reset()
@@ -69,54 +39,32 @@ fun main() {
             override fun nativeKeyPressed(event: NativeKeyEvent) {
                 if (pressedKeys.add(event.keyCode)) when (event.keyCode) {
                     Setting.exit -> {
+                        if (isLockedAndPrint()) return
                         println("매크로를 종료합니다.")
                         GlobalScreen.unregisterNativeHook()
                         exitProcess(0)
                     }
-                    Setting.reload -> Setting.loadSetting()
+                    Setting.reload -> {
+                        if (isLockedAndPrint()) return
+                        Setting.loadSetting()
+                    }
                     Setting.start -> {
-                        if (Feature.lock) {
-                            println("이미 매크로가 실행 중입니다.")
-                            return
-                        }
+                        if (isLockedAndPrint()) return
                         println("매크로를 시작합니다.")
                         Thread { Feature.run() }.start()
                     }
                     Setting.test -> {
+                        if (isLockedAndPrint()) return
                         println("테스트를 시작합니다.")
                         playTone(1000.0, 200, 0.1)
+                        Thread { Feature.run(true) }.start()
                     }
                 }
             }
             override fun nativeKeyReleased(event: NativeKeyEvent) {
-                pressedKeys.remove(event.keyCode)
+                pressedKeys -= event.keyCode
             }
         })
     }.start()
     Feature.run(true)
-}
-
-fun getPid(): Int {
-    val processName = if (Setting.legacyMode) "GTA5.exe" else "GTA5_Enhanced.exe"
-
-    println("'$processName'를 찾는 중...")
-    val process = ProcessBuilder("tasklist", "/fi", "imagename eq $processName", "/fo", "csv", "/nh").redirectErrorStream(true).start()
-
-    BufferedReader(InputStreamReader(process.inputStream)).use {
-        val line = it.readLine() ?: return -1
-        if (line.isBlank() || line.contains("No tasks")) return -1
-
-        val parts = line.split(",")
-        if (parts.size >= 2) return parts[1].replace("\"", "").toIntOrNull() ?: -1
-    }
-    return -1
-}
-
-interface Psapi: Library {
-    @Suppress("FunctionName")
-    fun GetModuleBaseNameW(hProcess: WinNT.HANDLE, hModule: Pointer?, lpBaseName: CharArray, nSize: Int): Int
-
-    companion object {
-        val INSTANCE: Psapi = Native.load("psapi", Psapi::class.java, W32APIOptions.UNICODE_OPTIONS)
-    }
 }
