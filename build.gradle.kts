@@ -1,8 +1,8 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    kotlin("jvm") version "2.1.20"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    kotlin("jvm") version "2.3.21"
+    id("com.gradleup.shadow") version "9.4.3"
 }
 
 group = "kr.hahaha98757"
@@ -19,7 +19,7 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(25)
 }
 
 tasks.named<Jar>("jar") { isEnabled = false }
@@ -33,6 +33,8 @@ tasks.named<ShadowJar>("shadowJar") {
 val packageFolder = file("build/jpackage/FingerprintMacro-$version")
 
 tasks.register<Exec>("packageExe") {
+    group = "build"
+    description = "Packages the application into an executable format using JPackage."
     dependsOn("shadowJar")
     if (packageFolder.exists()) packageFolder.deleteRecursively()
     commandLine(
