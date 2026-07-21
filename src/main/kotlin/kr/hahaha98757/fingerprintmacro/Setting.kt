@@ -18,56 +18,59 @@ object Setting {
     var test = NativeKeyEvent.VC_F7
 
     fun loadSetting() {
-        if (lock) return
-        lock = true
-        println("설정을 불러오는 중...")
-        display = 1
-        pressingTimes = 20
-        inputDelays = 20
-        saveImages = false
-        exit = NativeKeyEvent.VC_F4
-        reload = NativeKeyEvent.VC_F5
-        start = NativeKeyEvent.VC_F6
-        test = NativeKeyEvent.VC_F7
+        if (!tryLock()) return
 
-        val file = File(root, "setting.ini")
-        loadFile(file)
+        try {
+            println("설정을 불러오는 중...")
+            display = 1
+            pressingTimes = 20
+            inputDelays = 20
+            saveImages = false
+            exit = NativeKeyEvent.VC_F4
+            reload = NativeKeyEvent.VC_F5
+            start = NativeKeyEvent.VC_F6
+            test = NativeKeyEvent.VC_F7
 
-        file.forEachLine {
-            try {
-                val line = it.substringBefore("#").substringBefore(";").trim()
-                if (line.isBlank()) return@forEachLine
+            val file = File(root, "setting.ini")
+            loadFile(file)
 
-                val parts = line.split("=", limit = 2)
-                if (parts.size == 2) {
-                    val key = parts[0].trim()
-                    val value = parts[1].trim()
+            file.forEachLine {
+                try {
+                    val line = it.substringBefore("#").substringBefore(";").trim()
+                    if (line.isBlank()) return@forEachLine
 
-                    when (key) {
-                        "display" -> display = value.toInt()
-                        "pressingTimes" -> pressingTimes = value.toLong()
-                        "inputDelays" -> inputDelays = value.toLong()
-                        "saveImages" -> saveImages = value.toBoolean()
-                        "exit" -> exit = getKeyCode(value)
-                        "reload" -> reload = getKeyCode(value)
-                        "start" -> start = getKeyCode(value)
-                        "test" -> test = getKeyCode(value)
+                    val parts = line.split("=", limit = 2)
+                    if (parts.size == 2) {
+                        val key = parts[0].trim()
+                        val value = parts[1].trim()
+
+                        when (key) {
+                            "display" -> display = value.toInt()
+                            "pressingTimes" -> pressingTimes = value.toLong()
+                            "inputDelays" -> inputDelays = value.toLong()
+                            "saveImages" -> saveImages = value.toBoolean()
+                            "exit" -> exit = getKeyCode(value)
+                            "reload" -> reload = getKeyCode(value)
+                            "start" -> start = getKeyCode(value)
+                            "test" -> test = getKeyCode(value)
+                        }
                     }
-                }
-            } catch (_: Exception) {}
-        }
+                } catch (_: Exception) {}
+            }
 
-        println("display: $display")
-        println("pressingTimes: $pressingTimes")
-        println("inputDelays: $inputDelays")
-        println("saveImages: $saveImages")
-        println()
-        println("exit: ${exit.getKeyText()}")
-        println("reload: ${reload.getKeyText()}")
-        println("start: ${start.getKeyText()}")
-        println("test: ${test.getKeyText()}")
-        println("설정을 불러왔습니다.")
-        lock = false
+            println("display: $display")
+            println("pressingTimes: $pressingTimes")
+            println("inputDelays: $inputDelays")
+            println("saveImages: $saveImages")
+            println()
+            println("exit: ${exit.getKeyText()}")
+            println("reload: ${reload.getKeyText()}")
+            println("start: ${start.getKeyText()}")
+            println("test: ${test.getKeyText()}")
+            println("설정을 불러왔습니다.")
+        } finally {
+            lock.set(false)
+        }
     }
 
     private fun loadFile(file: File) {

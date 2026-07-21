@@ -13,57 +13,65 @@ object Feature {
     private val patterns = (1..16).map { ImageIO.read(Feature::class.java.getResourceAsStream("/patterns/$it.png")) }.toTypedArray()
 
     fun run(test: Boolean = false) {
-        if (lock) return
-        lock = true
-        val screen = getScreenshot()
-        if (Setting.saveImages) createPngImage(screen, "images/screenshot.png")
-
-        val pieceWidth = 116 // 조각 크기
-        val pieceHeight = 116
-        val startX = 476 // 조각 시작 좌표
-        val startY = 272
-        val gapX = 144 // 조각 간 간격
-        val gapY = 144
-
-        val result = mutableListOf<Boolean>()
-        var count = 0
-        var imageNo = 1
-
-        for (row in 0 until 4) for (col in 0 until 2) {
-            val x = startX + col * gapX
-            val y = startY + row * gapY
-            val piece = screen.getSubimage(x, y, pieceWidth, pieceHeight)
-            if (Setting.saveImages) createPngImage(piece, "images/pieces/${imageNo++}.png")
-            result += matchesAnyPattern(piece).also { if (it) count++ }
+        if (!tryLock()) return
+        if (!test) println("매크로를 시작합니다.")
+        else {
+            println("테스트를 시작합니다.")
+            playTone(1000.0, 200, 0.1)
         }
 
-        for ((i, bool) in result.withIndex()) if (i % 2 == 0) print("$bool    ") else println(bool)
+        try {
+            val screen = getScreenshot()
+            if (Setting.saveImages) createPngImage(screen, "images/screenshot.png")
 
-        if (count != 4) return
+            val pieceWidth = 116 // 조각 크기
+            val pieceHeight = 116
+            val startX = 476 // 조각 시작 좌표
+            val startY = 272
+            val gapX = 144 // 조각 간 간격
+            val gapY = 144
 
-        var enter = 0
-        var skip = false
-        for ((i, bool) in result.withIndex()) {
-            if (skip) {
-                skip = false
-                continue
+            val result = mutableListOf<Boolean>()
+            var count = 0
+            var imageNo = 1
+
+            for (row in 0 until 4) for (col in 0 until 2) {
+                val x = startX + col * gapX
+                val y = startY + row * gapY
+                val piece = screen.getSubimage(x, y, pieceWidth, pieceHeight)
+                if (Setting.saveImages) createPngImage(piece, "images/pieces/${imageNo++}.png")
+                result += matchesAnyPattern(piece).also { if (it) count++ }
             }
-            if (bool) {
-                inputKey(KeyEvent.VK_ENTER, test)
-                enter++
+
+            for ((i, bool) in result.withIndex()) if (i % 2 == 0) print("$bool    ") else println(bool)
+
+            if (count != 4) return
+
+            var enter = 0
+            var skip = false
+            for ((i, bool) in result.withIndex()) {
+                if (skip) {
+                    skip = false
+                    continue
+                }
+                if (bool) {
+                    inputKey(KeyEvent.VK_ENTER, test)
+                    enter++
+                }
+                if (enter == 4) {
+                    inputKey(KeyEvent.VK_TAB, test)
+                    break
+                }
+                if (!result[i+1]) {
+                    skip = true
+                    inputKey(KeyEvent.VK_DOWN, test)
+                } else inputKey(KeyEvent.VK_RIGHT, test)
             }
-            if (enter == 4) {
-                inputKey(KeyEvent.VK_TAB, test)
-                break
-            }
-            if (!result[i+1]) {
-                skip = true
-                inputKey(KeyEvent.VK_DOWN, test)
-            } else inputKey(KeyEvent.VK_RIGHT, test)
+            println()
+            println("매크로 실행 완료")
+        } finally {
+            lock.set(false)
         }
-        println()
-        println("매크로 실행 완료")
-        lock = false
     }
 
     private fun matchesAnyPattern(target: BufferedImage) = patterns.any { template -> imagesAreSimilarHSV(template, target, tolerance = 30, threshold = 0.8f) }

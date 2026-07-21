@@ -43,10 +43,10 @@ fun playTone(frequency: Double, durationMs: Int, volume: Double = 1.0) = Thread 
     line.close()
 }.start()
 
-fun isLockedAndPrint(): Boolean {
-    if (lock) {
+fun tryLock(): Boolean {
+    if (!lock.compareAndSet(false, true)) {
         println("이미 매크로가 실행 중이거나, 설정을 불러오는 중입니다.")
-        return true
+        return false
     }
-    return false
+    return true
 }
