@@ -1,6 +1,7 @@
 package kr.hahaha98757.fingerprintmacro
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent
+import kr.hahaha98757.fingerprintmacro.features.Capture
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -8,10 +9,12 @@ import java.nio.file.StandardCopyOption
 object Setting {
     const val VERSION = 1
 
+    var debug = false
     var display = 1
     var pressingTimes = 20L
     var inputDelays = 20L
-    var saveImages = false
+    var tolerance = 30
+    var threshold = 0.8
     var exit = NativeKeyEvent.VC_F4
     var reload = NativeKeyEvent.VC_F5
     var start = NativeKeyEvent.VC_F6
@@ -22,10 +25,12 @@ object Setting {
 
         try {
             println("설정을 불러오는 중...")
+            debug = false
             display = 1
             pressingTimes = 20
             inputDelays = 20
-            saveImages = false
+            tolerance = 30
+            threshold = 0.8
             exit = NativeKeyEvent.VC_F4
             reload = NativeKeyEvent.VC_F5
             start = NativeKeyEvent.VC_F6
@@ -45,10 +50,12 @@ object Setting {
                         val value = parts[1].trim()
 
                         when (key) {
+                            "debug" -> debug = value.toBoolean()
                             "display" -> display = value.toInt()
                             "pressingTimes" -> pressingTimes = value.toLong()
                             "inputDelays" -> inputDelays = value.toLong()
-                            "saveImages" -> saveImages = value.toBoolean()
+                            "tolerance" -> tolerance = value.toInt()
+                            "threshold" -> threshold = value.toDouble()
                             "exit" -> exit = getKeyCode(value)
                             "reload" -> reload = getKeyCode(value)
                             "start" -> start = getKeyCode(value)
@@ -58,19 +65,27 @@ object Setting {
                 } catch (_: Exception) {}
             }
 
+            println("debug: $debug")
             println("display: $display")
             println("pressingTimes: $pressingTimes")
             println("inputDelays: $inputDelays")
-            println("saveImages: $saveImages")
+            println("tolerance: $tolerance")
+            println("threshold: $threshold")
             println()
-            println("exit: ${exit.getKeyText()}")
-            println("reload: ${reload.getKeyText()}")
-            println("start: ${start.getKeyText()}")
-            println("test: ${test.getKeyText()}")
+            println("exit: ${exit.getHotKeyText()}")
+            println("reload: ${reload.getHotKeyText()}")
+            println("start: ${start.getHotKeyText()}")
+            println("test: ${test.getHotKeyText()}")
             println("설정을 불러왔습니다.")
+
+            actionForDepend()
         } finally {
             lock.set(false)
         }
+    }
+
+    private fun actionForDepend() {
+        Capture.loadDisplay()
     }
 
     private fun loadFile(file: File) {
@@ -81,7 +96,7 @@ object Setting {
 
         for (line in file.readLines()) {
             if (!line.trim().startsWith("version")) continue
-            val version = line.substringAfter("=").trim().toIntOrNull() ?: 0
+            val version = line.substringBefore(";").substringBefore("#").substringAfter("=").trim().toIntOrNull() ?: 0
             if (version != VERSION) {
                 println("설정 파일 버전이 맞지 않아 재생성합니다. 기존 설정은 백업되며 모든 설정이 초기화됩니다.")
                 Files.move(file.toPath(), File(root, "setting_backup.ini").toPath(), StandardCopyOption.REPLACE_EXISTING)
@@ -101,10 +116,12 @@ object Setting {
                 version = 1     ; 다른 버전이면 설정 파일을 재생성합니다.
                 
                 [general]
+                debug = false          ; 디버그 모드
                 display = 1            ; 감지할 모니터
                 pressingTimes = 20     ; 키를 누르고 있는 시간 (밀리초)
                 inputDelays = 20       ; 키 입력 간 지연 시간 (밀리초)
-                saveImages = false     ; 감지한 이미지 저장 여부
+                tolerance = 30         ; 이미지의 픽셀 비교 허용 오차 (0~255)
+                threshold = 0.8        ; 이미지 유사도 임계값 (0: 0%, 1: 100%)
 
                 # 키의 이름은 https://javadoc.io/static/com.1stleg/jnativehook/2.1.0/org/jnativehook/keyboard/NativeKeyEvent.html 에서 'VC_' 뒤의 이름을 "있는 그대로" 사용합니다.
                 [hotkeys]

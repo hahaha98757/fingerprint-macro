@@ -2,6 +2,7 @@ package kr.hahaha98757.fingerprintmacro
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent
 import java.awt.Robot
+import java.awt.event.KeyEvent
 import java.io.File
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
@@ -18,10 +19,10 @@ fun inputKey(keyCode: Int, test: Boolean = false) {
         robot.keyRelease(keyCode)
         Thread.sleep(Setting.inputDelays)
     }
-    print("${keyCode.getKeyText()} ")
+    print("${KeyEvent.getKeyText(keyCode)} ")
 }
 
-fun Int.getKeyText(): String = NativeKeyEvent.getKeyText(this)
+fun Int.getHotKeyText(): String = NativeKeyEvent.getKeyText(this)
 
 fun playTone(frequency: Double, durationMs: Int, volume: Double = 1.0) = Thread {
     val sampleRate = 44100f

@@ -3,6 +3,8 @@ package kr.hahaha98757.fingerprintmacro
 import com.github.kwhat.jnativehook.GlobalScreen
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener
+import kr.hahaha98757.fingerprintmacro.features.Feature
+import kr.hahaha98757.fingerprintmacro.features.InputHandler
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
 import java.util.logging.LogManager
@@ -19,8 +21,10 @@ fun main() {
     Thread.sleep(1000)
 
     Setting.loadSetting()
-
-    Feature.run(true)
+    println()
+    InputHandler.init()
+    println()
+    Feature.run(true, init = true)
 
     Thread {
         LogManager.getLogManager().reset()
@@ -33,7 +37,7 @@ fun main() {
             override fun nativeKeyPressed(event: NativeKeyEvent) {
                 if (pressedKeys.add(event.keyCode)) when (event.keyCode) {
                     Setting.exit -> {
-                        if (tryLock()) return
+                        if (!tryLock()) return
                         println("매크로를 종료합니다.")
                         GlobalScreen.unregisterNativeHook()
                         exitProcess(0)
@@ -50,10 +54,10 @@ fun main() {
     }.start()
 
     println()
-    println("'${Setting.exit.getKeyText()}' 키를 눌러 매크로를 종료합니다.")
-    println("'${Setting.reload.getKeyText()}' 키를 눌러 설정을 다시 불러옵니다.")
-    println("'${Setting.start.getKeyText()}' 키를 눌러 매크로를 시작합니다.")
-    println("'${Setting.test.getKeyText()}' 키를 눌러 테스트를 할 수 있습니다.")
+    println("'${Setting.exit.getHotKeyText()}' 키를 눌러 매크로를 종료합니다.")
+    println("'${Setting.reload.getHotKeyText()}' 키를 눌러 설정을 다시 불러옵니다.")
+    println("'${Setting.start.getHotKeyText()}' 키를 눌러 매크로를 시작합니다.")
+    println("'${Setting.test.getHotKeyText()}' 키를 눌러 테스트를 할 수 있습니다.")
 
     println("매크로 준비 완료")
     playTone(1000.0, 200, 0.1)
