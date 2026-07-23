@@ -24,7 +24,7 @@ fun main() {
     println()
     InputHandler.init()
     println()
-    Feature.run(true, init = true)
+    Feature.run(init = true)
 
     Thread {
         LogManager.getLogManager().reset()
