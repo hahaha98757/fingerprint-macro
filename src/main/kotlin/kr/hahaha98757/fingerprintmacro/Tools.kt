@@ -15,9 +15,9 @@ val root = File(object {}::class.java.protectionDomain.codeSource.location.toURI
 fun inputKey(keyCode: Int, test: Boolean = false) {
     if (!test) {
         robot.keyPress(keyCode)
-        Thread.sleep(Setting.pressingTimes)
+        if (Setting.pressingTimes > 0) Thread.sleep(Setting.pressingTimes)
         robot.keyRelease(keyCode)
-        Thread.sleep(Setting.inputDelays)
+        if (Setting.inputDelays > 0) Thread.sleep(Setting.inputDelays)
     }
     print("${KeyEvent.getKeyText(keyCode)} ")
 }
@@ -44,10 +44,7 @@ fun playTone(frequency: Double, durationMs: Int, volume: Double = 1.0) = Thread 
     line.close()
 }.start()
 
-fun tryLock(): Boolean {
-    if (!lock.compareAndSet(false, true)) {
-        println("이미 매크로가 실행 중이거나, 설정을 불러오는 중입니다.")
-        return false
-    }
-    return true
-}
+fun tryLock() = if (!lock.compareAndSet(false, true)) {
+    println("이미 매크로가 실행 중이거나, 설정을 불러오는 중입니다.")
+    false
+} else true
