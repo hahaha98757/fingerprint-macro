@@ -58,7 +58,10 @@ object Capture {
 
     fun initOrReload() {
         val device = GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices
-        val index = if (Setting.display > device.size) 0 else Setting.display - 1
+        val index = if (Setting.display <= device.size) Setting.display - 1 else {
+            println("설정된 디스플레이 번호가 잘못되었습니다. 1번 디스플레이를 사용합니다.")
+            0
+        }
         bounds = device[index].defaultConfiguration.bounds
     }
 }

@@ -135,21 +135,22 @@ object Setting {
                 
                 # 수정 금지
                 [doNotEdit]
-                version = 1            ; 다른 버전이면 설정 파일을 재생성합니다.
+                version = 1            ; 버전이 다르면 설정 파일을 재생성합니다.
                 
                 [general]
                 display = 1            ; 감지할 모니터
-                pressingTimes = 20     ; 키를 누르고 있는 시간 (밀리초)
-                inputDelays = 20       ; 키 입력 간 지연 시간 (밀리초)
+                pressingTimes = 10     ; 키를 누르고 있는 시간 (밀리초)
+                inputDelays = 10       ; 키 입력 간 지연 시간 (밀리초)
                 tolerance = 30         ; 이미지의 픽셀 비교 허용 오차 (0~255)
                 threshold = 0.8        ; 이미지 유사도 임계값 (0: 0%, 1: 100%)
                 
                 # 해상도 예시: 1920x1080(FHD), 2560x1440(QHD), 3840x2160(UHD)
+                # FHD에서 가장 정확하게 동작합니다.
                 [layout]
                 width = 1920
                 height = 1080
 
-                # 키의 이름은 https://javadoc.io/static/com.1stleg/jnativehook/2.1.0/org/jnativehook/keyboard/NativeKeyEvent.html 에서 'VC_' 뒤의 이름을 "있는 그대로" 사용합니다.
+                # 키의 이름은 "https://javadoc.io/static/com.1stleg/jnativehook/2.1.0/org/jnativehook/keyboard/NativeKeyEvent.html"에서 'VC_' 뒤의 이름을 "있는 그대로" 사용합니다.
                 [hotkeys]
                 exit = F4              ; 매크로 종료
                 reload = F5            ; 설정 다시 불러오기
@@ -169,9 +170,8 @@ private fun getKeyCode(name: String): Int {
     return try {
         val field = NativeKeyEvent::class.java.getField(fieldName)
         field.getInt(null)
-    } catch (e: Exception) {
-        e.printStackTrace()
-        System.err.println("알 수 없는 키")
+    } catch (_: Exception) {
+        println("알 수 없는 키: $name")
         0
     }
 }

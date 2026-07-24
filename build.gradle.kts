@@ -43,7 +43,14 @@ tasks.register<Exec>("packageExe") {
         "--main-jar", "FingerprintMacro-$version.jar",
         "--icon", "icon.ico",
         "--dest", "build/jpackage",
-        "--win-console"
+        "--win-console",
+        "--java-options", "--enable-native-access=ALL-UNNAMED"
     )
-    doLast { file("build/jpackage/FingerprintMacro-$version/FingerprintMacro-$version.ico").delete() }
+    doLast {
+        file("build/jpackage/FingerprintMacro-$version/FingerprintMacro-$version.ico").delete()
+        copy {
+            from("resource/README.txt")
+            into(packageFolder)
+        }
+    }
 }
