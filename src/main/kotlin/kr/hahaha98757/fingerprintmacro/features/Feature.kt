@@ -1,9 +1,6 @@
 package kr.hahaha98757.fingerprintmacro.features
 
-import kr.hahaha98757.fingerprintmacro.Setting
-import kr.hahaha98757.fingerprintmacro.lock
-import kr.hahaha98757.fingerprintmacro.playTone
-import kr.hahaha98757.fingerprintmacro.tryLock
+import kr.hahaha98757.fingerprintmacro.*
 import java.awt.RenderingHints
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
@@ -13,7 +10,6 @@ object Feature {
     private lateinit var patterns: Array<GrayImage>
 
     fun initOrReload() {
-        Capture.initOrReload()
         patterns = originalPatterns.map { GrayImage(resizeImage(it, Capture.pieceWidth, Capture.pieceHeight)) }.toTypedArray()
         run(init = true)
     }
@@ -29,15 +25,15 @@ object Feature {
     }
 
     fun run(test: Boolean = false, init: Boolean = false) {
-        if (!init && !tryLock()) return
-        if (!init)
-            if (!test) println("매크로를 시작합니다.")
-            else {
-                println("테스트를 시작합니다.")
-                playTone(1000.0, 200, 0.1)
-            }
-
         try {
+            if (!init && !tryLock()) return
+
+            if (!init)
+                if (!test) println("매크로를 시작합니다.")
+                else {
+                    println("테스트를 시작합니다.")
+                    playTone(1000.0, 200, 0.1)
+                }
             val pieces = Capture.getPieces(!init && Setting.saveImage)
 
             val result = mutableListOf<Boolean>()
@@ -52,7 +48,7 @@ object Feature {
                     val max = arr.maxOrNull() ?: 0.0
                     val secMax = arr.filter { it != max }.maxOrNull() ?: 0.0
                     val min = arr.minOrNull() ?: 0.0
-                    println("Max: ${String.format("%.2f", max * 100)}%, Second Max: ${String.format("%.2f", secMax * 100)}%, Min: ${String.format("%.2f", min * 100)}%")
+                    printDebug("Max: ${String.format("%.2f", max * 100)}%, Second Max: ${String.format("%.2f", secMax * 100)}%, Min: ${String.format("%.2f", min * 100)}%")
                 }
                 val maxSimilarity = arr.maxOrNull() ?: 0.0
                 if (maxSimilarity >= Setting.threshold) {
@@ -63,16 +59,16 @@ object Feature {
 
             if (init) return
 
-            for ((i, bool) in result.withIndex()) if (i % 2 == 0) print("$bool    ") else println(bool)
+            printDebug("인식 결과:\n" +
+                    result.map { if (it) "O" else "X" }.chunked(2).joinToString("\n") { it.joinToString("    ") }
+            )
 
             if (count != 4) {
-                println()
-                println("인식 실패")
+                printErr("인식 실패: 인식된 조각 수가 4개가 아닙니다. (${count}개)")
                 return
             }
 
             InputHandler.run(result.toBooleanArray(), test)
-            println()
             if (!test) println("매크로 실행 완료")
             else println("테스트 완료")
             println()

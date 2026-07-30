@@ -1,7 +1,10 @@
 package kr.hahaha98757.fingerprintmacro.features
 
 import kr.hahaha98757.fingerprintmacro.inputKey
+import kr.hahaha98757.fingerprintmacro.printDebug
+import kr.hahaha98757.fingerprintmacro.printErr
 import java.awt.event.KeyEvent
+import kotlin.system.exitProcess
 
 object InputHandler {
     private val lookup = arrayOfNulls<List<Int>>(256)
@@ -10,16 +13,16 @@ object InputHandler {
         var mask = 0
         for (i in result.indices) if (result[i]) mask = mask or (1 shl i)
         val keyList = lookup[mask] ?: return
-        keyList.forEach { inputKey(it, test) }
+        var inputtedKeys = "입력된 키: "
+        keyList.forEach { inputtedKeys += inputKey(it, test) }
+        printDebug(inputtedKeys)
     }
 
     fun init() {
-        println("최단 경로 계산 중...")
         for (mask in 0 until 256) {
             if (Integer.bitCount(mask) != 4) continue
             lookup[mask] = createShortestPath(mask)
         }
-        println("최단 경로 계산 완료")
     }
 
     private fun createShortestPath(targetMask: Int): List<Int> {
@@ -66,7 +69,8 @@ object InputHandler {
             visit(State(state.cursor, state.selected xor (1 shl state.cursor)), KeyEvent.VK_ENTER)
         }
 
-        error("No solution")
+        printErr("패턴 '${Integer.toBinaryString(targetMask).padStart(8, '0')}'에 대한 최단 경로를 찾을 수 없습니다.")
+        exitProcess(1)
     }
 }
 

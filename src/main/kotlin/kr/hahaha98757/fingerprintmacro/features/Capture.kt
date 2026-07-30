@@ -1,6 +1,7 @@
 package kr.hahaha98757.fingerprintmacro.features
 
 import kr.hahaha98757.fingerprintmacro.Setting
+import kr.hahaha98757.fingerprintmacro.printErr
 import kr.hahaha98757.fingerprintmacro.robot
 import kr.hahaha98757.fingerprintmacro.root
 import java.awt.GraphicsEnvironment
@@ -21,8 +22,8 @@ object Capture {
     private const val GAP_X = 144
     private const val GAP_Y = 144
 
-    private val scaleX = Setting.width.toDouble() / BASE_WIDTH
-    private val scaleY = Setting.height.toDouble() / BASE_HEIGHT
+    private val scaleX get() = bounds.width.toDouble() / BASE_WIDTH
+    private val scaleY get() = bounds.height.toDouble() / BASE_HEIGHT
 
     val pieceWidth get() = (PIECE_WIDTH * scaleX).roundToInt()
     val pieceHeight get() = (PIECE_HEIGHT * scaleY).roundToInt()
@@ -59,9 +60,10 @@ object Capture {
     fun initOrReload() {
         val device = GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices
         val index = if (Setting.display <= device.size) Setting.display - 1 else {
-            println("설정된 디스플레이 번호가 잘못되었습니다. 1번 디스플레이를 사용합니다.")
+            printErr("설정된 디스플레이 번호가 잘못되었습니다. 1번 디스플레이를 사용합니다.")
             0
         }
         bounds = device[index].defaultConfiguration.bounds
+        println("설정된 디스플레이: ${index + 1}번, 해상도: ${bounds.width}x${bounds.height}")
     }
 }

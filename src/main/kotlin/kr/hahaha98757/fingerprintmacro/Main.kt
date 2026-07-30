@@ -21,10 +21,7 @@ fun main() {
     Thread.sleep(1000)
 
     Setting.loadSetting()
-    println()
     InputHandler.init()
-    println()
-    Feature.run(init = true)
 
     Thread {
         LogManager.getLogManager().reset()
@@ -53,12 +50,8 @@ fun main() {
         })
     }.start()
 
+    println("종료: ${Setting.exit.getHotKeyText()}, 설정 불러오기: ${Setting.reload.getHotKeyText()}, 매크로 시작: ${Setting.start.getHotKeyText()}, 테스트: ${Setting.test.getHotKeyText()}")
     println()
-    println("'${Setting.exit.getHotKeyText()}' 키를 눌러 매크로를 종료합니다.")
-    println("'${Setting.reload.getHotKeyText()}' 키를 눌러 설정을 다시 불러옵니다.")
-    println("'${Setting.start.getHotKeyText()}' 키를 눌러 매크로를 시작합니다.")
-    println("'${Setting.test.getHotKeyText()}' 키를 눌러 테스트를 할 수 있습니다.")
-
     println("매크로 준비 완료")
     playTone(1000.0, 200, 0.1)
 }
