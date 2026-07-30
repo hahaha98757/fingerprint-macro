@@ -15,8 +15,8 @@ object Capture {
     private const val BASE_WIDTH = 1920
     private const val BASE_HEIGHT = 1080
 
-    private const val PIECE_WIDTH = 116
-    private const val PIECE_HEIGHT = 116
+    private const val PIECE_X = 116
+    private const val PIECE_Y = 116
     private const val START_X = 476
     private const val START_Y = 272
     private const val GAP_X = 144
@@ -25,8 +25,8 @@ object Capture {
     private val scaleX get() = bounds.width.toDouble() / BASE_WIDTH
     private val scaleY get() = bounds.height.toDouble() / BASE_HEIGHT
 
-    val pieceWidth get() = (PIECE_WIDTH * scaleX).roundToInt()
-    val pieceHeight get() = (PIECE_HEIGHT * scaleY).roundToInt()
+    val pieceX get() = (PIECE_X * scaleX).roundToInt()
+    val pieceY get() = (PIECE_Y * scaleY).roundToInt()
     val startX get() = (START_X * scaleX).roundToInt()
     val startY get() = (START_Y * scaleY).roundToInt()
     val gapX get() = (GAP_X * scaleX).roundToInt()
@@ -35,16 +35,26 @@ object Capture {
     private lateinit var bounds: Rectangle
 
     fun getPieces(saveImage: Boolean = false): List<GrayImage> {
-        val screen = robot.createScreenCapture(bounds)
+        val pieceW = pieceX
+        val pieceH = pieceY
+        val gapW = gapX
+        val gapH = gapY
+        val captureRect = Rectangle(
+            bounds.x + startX,
+            bounds.y + startY,
+            gapW + pieceW,
+            3 * gapH + pieceH
+        )
+        val screen = robot.createScreenCapture(captureRect)
 //        val screen = ImageIO.read(Capture::class.java.getResourceAsStream("/screen.png"))!! // 테스트용
         if (saveImage) saveImage(screen, "images/screenshot.png")
-        val pieces = mutableListOf<GrayImage>()
+        val pieces = ArrayList<GrayImage>(8)
         var imageNo = 1
 
-        for (row in 0 until 4) for (col in 0 until 2) {
-            val x = startX + col * gapX
-            val y = startY + row * gapY
-            val piece = screen.getSubimage(x, y, pieceWidth, pieceHeight)
+        for (row in 0..<4) for (col in 0..<2) {
+            val x = col * gapW
+            val y = row * gapH
+            val piece = screen.getSubimage(x, y, pieceW, pieceH)
             if (saveImage) saveImage(piece, "images/pieces/${imageNo++}.png")
             pieces += GrayImage(piece)
         }
@@ -59,7 +69,7 @@ object Capture {
 
     fun initOrReload() {
         val device = GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices
-        val index = if (Setting.display <= device.size) Setting.display - 1 else {
+        val index = if (Setting.display in 1..device.size) Setting.display - 1 else {
             printErr("설정된 디스플레이 번호가 잘못되었습니다. 1번 디스플레이를 사용합니다.")
             0
         }

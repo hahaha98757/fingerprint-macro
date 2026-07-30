@@ -12,14 +12,17 @@ object InputHandler {
     fun run(result: BooleanArray, test: Boolean = false) {
         var mask = 0
         for (i in result.indices) if (result[i]) mask = mask or (1 shl i)
-        val keyList = lookup[mask] ?: return
-        var inputtedKeys = "입력된 키: "
-        keyList.forEach { inputtedKeys += inputKey(it, test) }
-        printDebug(inputtedKeys)
+        val keyList = lookup[mask]!!
+        val inputtedKeys = StringBuilder("입력된 키: ")
+        val start = System.nanoTime()
+        for (keyCode in keyList) inputtedKeys.append(inputKey(keyCode, test))
+        printDebug(inputtedKeys.toString())
+        val elapsedTime = (System.nanoTime() - start) / 1_000_000.0
+        printDebug("1회 입력 평균 소요 시간: ${"%.2f".format(elapsedTime / keyList.size)}ms")
     }
 
     fun init() {
-        for (mask in 0 until 256) {
+        for (mask in 0..<256) {
             if (Integer.bitCount(mask) != 4) continue
             lookup[mask] = createShortestPath(mask)
         }

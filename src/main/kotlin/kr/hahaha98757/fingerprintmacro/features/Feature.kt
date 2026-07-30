@@ -10,7 +10,7 @@ object Feature {
     private lateinit var patterns: Array<GrayImage>
 
     fun initOrReload() {
-        patterns = originalPatterns.map { GrayImage(resizeImage(it, Capture.pieceWidth, Capture.pieceHeight)) }.toTypedArray()
+        patterns = originalPatterns.map { GrayImage(resizeImage(it, Capture.pieceX, Capture.pieceY)) }.toTypedArray()
         run(init = true)
     }
 
@@ -26,6 +26,7 @@ object Feature {
 
     fun run(test: Boolean = false, init: Boolean = false) {
         try {
+            val start = System.nanoTime()
             if (!init && !tryLock()) return
 
             if (!init)
@@ -35,40 +36,69 @@ object Feature {
                     playTone(1000.0, 200, 0.1)
                 }
             val pieces = Capture.getPieces(!init && Setting.saveImage)
-
-            val result = mutableListOf<Boolean>()
+            val tolerance = Setting.tolerance
+            val threshold = Setting.threshold
+            val similarityDebugEnabled = !init && Setting.similarity
+            val result = BooleanArray(pieces.size)
             var count = 0
 
-            for (piece in pieces) {
-                val arr = DoubleArray(16)
-                patterns.forEachIndexed { index, image ->
-                    arr[index] = getSimilarity(piece, image, Setting.tolerance)
-                }
-                if (!init && Setting.similarity) {
-                    val max = arr.maxOrNull() ?: 0.0
-                    val secMax = arr.filter { it != max }.maxOrNull() ?: 0.0
-                    val min = arr.minOrNull() ?: 0.0
+            for (pieceIndex in pieces.indices) {
+                val piece = pieces[pieceIndex]
+                var maxSimilarity = 0.0
+
+                if (similarityDebugEnabled) {
+                    val scores = DoubleArray(patterns.size)
+                    var secondMax = 0.0
+                    for (patternIndex in patterns.indices) {
+                        val similarity = getSimilarity(piece, patterns[patternIndex], tolerance)
+                        scores[patternIndex] = similarity
+                        if (similarity > maxSimilarity) {
+                            secondMax = maxSimilarity
+                            maxSimilarity = similarity
+                        } else if (similarity > secondMax) {
+                            secondMax = similarity
+                        }
+                    }
+                    val max = maxSimilarity
+                    val secMax = secondMax
+                    val min = scores.minOrNull() ?: 0.0
                     printDebug("Max: ${String.format("%.2f", max * 100)}%, Second Max: ${String.format("%.2f", secMax * 100)}%, Min: ${String.format("%.2f", min * 100)}%")
+                } else {
+                    for (pattern in patterns) {
+                        val similarity = getSimilarity(piece, pattern, tolerance)
+                        if (similarity >= threshold) {
+                            maxSimilarity = similarity
+                            break
+                        }
+                        if (similarity > maxSimilarity) maxSimilarity = similarity
+                    }
                 }
-                val maxSimilarity = arr.maxOrNull() ?: 0.0
-                if (maxSimilarity >= Setting.threshold) {
-                    result += true
-                    count++
-                } else result += false
+
+                val matched = maxSimilarity >= threshold
+                result[pieceIndex] = matched
+                if (matched) count++
             }
 
             if (init) return
 
-            printDebug("인식 결과:\n" +
-                    result.map { if (it) "O" else "X" }.chunked(2).joinToString("\n") { it.joinToString("    ") }
-            )
+            val output = buildString {
+                append("인식 결과:\n")
+                for (index in result.indices) {
+                    if (index > 0 && index % 2 == 0) append('\n')
+                    append(if (result[index]) "O" else "X")
+                    if (index % 2 == 0) append("    ")
+                }
+            }
+            printDebug(output)
 
             if (count != 4) {
                 printErr("인식 실패: 인식된 조각 수가 4개가 아닙니다. (${count}개)")
                 return
             }
 
-            InputHandler.run(result.toBooleanArray(), test)
+            InputHandler.run(result, test)
+            val elapsedTime = (System.nanoTime() - start) / 1_000_000.0
+            printDebug("소요 시간: ${"%.2f".format(elapsedTime)}ms")
             if (!test) println("매크로 실행 완료")
             else println("테스트 완료")
             println()

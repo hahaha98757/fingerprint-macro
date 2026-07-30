@@ -39,7 +39,11 @@ class GrayImage(image: BufferedImage) {
 fun getSimilarity(img1: GrayImage, img2: GrayImage, tolerance: Int): Double {
     if (img1.width != img2.width || img1.height != img2.height) return 0.0
 
+    val pixels1 = img1.pixels
+    val pixels2 = img2.pixels
+    val pixelCount = pixels1.size
+
     var similar = 0
-    for (i in img1.pixels.indices) if (abs(img1.pixels[i] - img2.pixels[i]) <= tolerance) similar++
-    return similar.toDouble() / img1.pixels.size
+    for (i in 0..<pixelCount) if (abs(pixels1[i] - pixels2[i]) <= tolerance) similar++
+    return similar.toDouble() / pixelCount
 }
