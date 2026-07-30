@@ -133,8 +133,8 @@ object Setting {
                 
                 [general]
                 display = 1                ; 감지할 모니터
-                pressingTimes = 10         ; 키를 누르고 있는 시간 (밀리초)
-                inputDelays = 10           ; 키 입력 간 지연 시간 (밀리초)
+                pressingTimes = 20         ; 키를 누르고 있는 시간 (밀리초)
+                inputDelays = 20           ; 키 입력 간 지연 시간 (밀리초)
                 tolerance = 30             ; 이미지의 픽셀 비교 허용 오차 (0~255)
                 threshold = 0.8            ; 이미지 유사도 임계값 (0: 0%, 1: 100%)
 
