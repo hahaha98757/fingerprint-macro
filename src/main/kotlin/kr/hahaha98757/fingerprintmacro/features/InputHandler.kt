@@ -23,11 +23,11 @@ object InputHandler {
     }
 
     private fun inputKey(key: Key) {
-        if (Setting.pressingTimes <= 0) sendBatch(key.keyCode)
+        if (Setting.pressingTimes <= 0) sendBatch(key.scanCode)
         else {
-            send(key.keyCode, false)
+            send(key.scanCode, false)
             Thread.sleep(Setting.pressingTimes)
-            send(key.keyCode, true)
+            send(key.scanCode, true)
         }
         if (Setting.inputDelays > 0) Thread.sleep(Setting.inputDelays)
     }
@@ -35,29 +35,32 @@ object InputHandler {
     @Suppress("UNCHECKED_CAST")
     private val inputs = WinUser.INPUT().toArray(2) as Array<WinUser.INPUT>
 
-    private fun send(keyCode: Int, keyUp: Boolean) {
+    private fun send(scanCode: Int, keyUp: Boolean) {
         val input = inputs[0]
         input.type = WinDef.DWORD(WinUser.INPUT.INPUT_KEYBOARD.toLong())
         input.input.setType("ki")
-        input.input.ki.wVk = WinDef.WORD(keyCode.toLong())
-        input.input.ki.dwFlags = WinDef.DWORD(if (keyUp) 0x0002L else 0L)
+        input.input.ki.wVk = WinDef.WORD(0)
+        input.input.ki.wScan = WinDef.WORD(scanCode.toLong())
+        input.input.ki.dwFlags = WinDef.DWORD(0x0008L or if (keyUp) 0x0002L else 0L)
 
         User32.INSTANCE.SendInput(WinDef.DWORD(1), inputs, input.size())
     }
 
-    private fun sendBatch(keyCode: Int) {
+    private fun sendBatch(scanCode: Int) {
         val down = inputs[0]
         val up = inputs[1]
 
         down.type = WinDef.DWORD(WinUser.INPUT.INPUT_KEYBOARD.toLong())
         down.input.setType("ki")
-        down.input.ki.wVk = WinDef.WORD(keyCode.toLong())
-        down.input.ki.dwFlags = WinDef.DWORD(0L)
+        down.input.ki.wVk = WinDef.WORD(0)
+        down.input.ki.wScan = WinDef.WORD(scanCode.toLong())
+        down.input.ki.dwFlags = WinDef.DWORD(0x0008L or 0L)
 
         up.type = WinDef.DWORD(WinUser.INPUT.INPUT_KEYBOARD.toLong())
         up.input.setType("ki")
-        up.input.ki.wVk = WinDef.WORD(keyCode.toLong())
-        up.input.ki.dwFlags = WinDef.DWORD(0x0002L)
+        up.input.ki.wVk = WinDef.WORD(0)
+        up.input.ki.wScan = WinDef.WORD(scanCode.toLong())
+        up.input.ki.dwFlags = WinDef.DWORD(0x0008L or 0x0002L)
 
         User32.INSTANCE.SendInput(WinDef.DWORD(2), inputs, down.size())
     }
@@ -126,13 +129,13 @@ private data class State(
     val selected: Int
 )
 
-private enum class Key(val keyCode: Int, val str: String) {
-    LEFT(0x25, "Left"),
-    UP(0x26, "Up"),
-    RIGHT(0x27, "Right"),
-    DOWN(0x28, "Down"),
-    ENTER(0x0D, "Enter"),
-    TAB(0x09, "Tab");
+private enum class Key(val scanCode: Int, val str: String) {
+    UP(0x11, "Up"), // W
+    LEFT(0x1E, "Left"), // A
+    DOWN(0x1F, "Down"), // S
+    RIGHT(0x20, "Right"), // D
+    ENTER(0x1C, "Enter"),
+    TAB(0x0F, "Tab");
 
     override fun toString() = str
 }
