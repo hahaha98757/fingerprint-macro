@@ -81,15 +81,17 @@ object Feature {
 
             if (init) return
 
-            val output = buildString {
-                append("인식 결과:\n")
-                for (index in result.indices) {
-                    if (index > 0 && index % 2 == 0) append('\n')
-                    append(if (result[index]) "O" else "X")
-                    if (index % 2 == 0) append("    ")
+            if (Setting.debug) {
+                val debugOutput = buildString {
+                    append("조각 인식 결과:\n")
+                    for (index in result.indices) {
+                        if (index > 0 && index % 2 == 0) append('\n')
+                        append(if (result[index]) "O" else "X")
+                        if (index % 2 == 0) append("    ")
+                    }
                 }
+                printDebug(debugOutput)
             }
-            printDebug(output)
 
             if (count != 4) {
                 printErr("인식 실패: 인식된 조각 수가 4개가 아닙니다. (${count}개)")
