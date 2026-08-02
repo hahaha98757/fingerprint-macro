@@ -23,32 +23,30 @@ fun main() {
     Setting.loadSetting()
     InputHandler.init()
 
-    Thread {
-        LogManager.getLogManager().reset()
-        Logger.getLogger(GlobalScreen::class.java.packageName).level = Level.OFF
+    LogManager.getLogManager().reset()
+    Logger.getLogger(GlobalScreen::class.java.packageName).level = Level.OFF
 
-        GlobalScreen.registerNativeHook()
-        GlobalScreen.addNativeKeyListener(object: NativeKeyListener {
-            val pressedKeys = mutableSetOf<Int>()
+    GlobalScreen.registerNativeHook()
+    GlobalScreen.addNativeKeyListener(object: NativeKeyListener {
+        val pressedKeys = mutableSetOf<Int>()
 
-            override fun nativeKeyPressed(event: NativeKeyEvent) {
-                if (pressedKeys.add(event.keyCode)) when (event.keyCode) {
-                    Setting.exit -> {
-                        if (!tryLock()) return
-                        println("매크로를 종료합니다.")
-                        GlobalScreen.unregisterNativeHook()
-                        exitProcess(0)
-                    }
-                    Setting.reload -> Setting.loadSetting()
-                    Setting.start -> Thread { Feature.run() }.start()
-                    Setting.test -> Thread { Feature.run(true) }.start()
+        override fun nativeKeyPressed(event: NativeKeyEvent) {
+            if (pressedKeys.add(event.keyCode)) when (event.keyCode) {
+                Setting.exit -> {
+                    if (!tryLock()) return
+                    println("매크로를 종료합니다.")
+                    GlobalScreen.unregisterNativeHook()
+                    exitProcess(0)
                 }
+                Setting.reload -> Setting.loadSetting()
+                Setting.start -> Feature.run()
+                Setting.test -> Feature.run(true)
             }
-            override fun nativeKeyReleased(event: NativeKeyEvent) {
-                pressedKeys -= event.keyCode
-            }
-        })
-    }.start()
+        }
+        override fun nativeKeyReleased(event: NativeKeyEvent) {
+            pressedKeys -= event.keyCode
+        }
+    })
 
     println("종료: ${Setting.exit.getHotKeyText()}, 설정 불러오기: ${Setting.reload.getHotKeyText()}, 매크로 시작: ${Setting.start.getHotKeyText()}, 테스트: ${Setting.test.getHotKeyText()}")
     println()
