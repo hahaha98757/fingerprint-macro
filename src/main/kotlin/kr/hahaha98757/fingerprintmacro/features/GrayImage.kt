@@ -9,15 +9,13 @@ class GrayImage(image: BufferedImage) {
     val pixels = IntArray(width * height)
 
     init {
-        for (y in 0..<height) {
-            for (x in 0..<width) {
-                val rgb = image.getRGB(x, y)
-                val r = (rgb shr 16) and 0xFF
-                val g = (rgb shr 8) and 0xFF
-                val b = rgb and 0xFF
-                val gray = (r + g + b) / 3
-                pixels[y * width + x] = gray
-            }
+        for (y in 0..<height) for (x in 0..<width) {
+            val rgb = image.getRGB(x, y)
+            val r = (rgb shr 16) and 0xFF
+            val g = (rgb shr 8) and 0xFF
+            val b = rgb and 0xFF
+            val gray = (r + g + b) / 3
+            pixels[y * width + x] = gray
         }
     }
 

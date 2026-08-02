@@ -58,19 +58,23 @@ object Setting {
                         val key = parts[0].trim()
                         val value = parts[1].trim()
 
-                        when (key) {
-                            "display" -> display = value.toInt()
-                            "pressingTimes" -> pressingTimes = value.toLong()
-                            "inputDelays" -> inputDelays = value.toLong()
-                            "tolerance" -> tolerance = value.toInt()
-                            "threshold" -> threshold = value.toDouble()
-                            "exit" -> exit = getKeyCode(value)
-                            "reload" -> reload = getKeyCode(value)
-                            "start" -> start = getKeyCode(value)
-                            "test" -> test = getKeyCode(value)
-                            "debug" -> debug = value.toBoolean()
-                            "saveImage" -> saveImage = value.toBoolean()
-                            "similarity" -> similarity = value.toBoolean()
+                        try {
+                            when (key) {
+                                "display" -> display = value.toInt()
+                                "pressingTimes" -> pressingTimes = value.toLong()
+                                "inputDelays" -> inputDelays = value.toLong()
+                                "tolerance" -> tolerance = value.toInt()
+                                "threshold" -> threshold = value.toDouble()
+                                "exit" -> exit = getKeyCode(value)
+                                "reload" -> reload = getKeyCode(value)
+                                "start" -> start = getKeyCode(value)
+                                "test" -> test = getKeyCode(value)
+                                "debug" -> debug = value.toBoolean()
+                                "saveImage" -> saveImage = value.toBoolean()
+                                "similarity" -> similarity = value.toBoolean()
+                            }
+                        } catch (_: Exception) {
+                            printErr("알 수 없는 설정 값: $key = $value (기본값으로 설정됩니다.)")
                         }
                     }
                 } catch (_: Exception) {}
@@ -138,7 +142,8 @@ object Setting {
                 tolerance = 30             ; 이미지의 픽셀 비교 허용 오차 (0~255)
                 threshold = 0.8            ; 이미지 유사도 임계값 (0: 0%, 1: 100%)
 
-                # 키의 이름은 "https://javadoc.io/static/com.1stleg/jnativehook/2.1.0/org/jnativehook/keyboard/NativeKeyEvent.html"에서 'VC_' 뒤의 이름을 "있는 그대로" 사용합니다.
+                # 키의 이름은 다음 사이트에서 'VC_' 뒤의 이름을 "있는 그대로" 사용합니다.
+                # https://javadoc.io/static/com.1stleg/jnativehook/2.1.0/org/jnativehook/keyboard/NativeKeyEvent.html
                 [hotkeys]
                 exit = F4                  ; 매크로 종료
                 reload = F5                ; 설정 다시 불러오기
