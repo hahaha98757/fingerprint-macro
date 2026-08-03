@@ -55,23 +55,19 @@ object Feature {
                         if (similarity > maxSimilarity) {
                             secondMax = maxSimilarity
                             maxSimilarity = similarity
-                        } else if (similarity > secondMax) {
-                            secondMax = similarity
-                        }
+                        } else if (similarity > secondMax) secondMax = similarity
                     }
                     val max = maxSimilarity
                     val secMax = secondMax
                     val min = scores.minOrNull() ?: 0.0
                     printDebug("Max: ${String.format("%.2f", max * 100)}%, Second Max: ${String.format("%.2f", secMax * 100)}%, Min: ${String.format("%.2f", min * 100)}%")
-                } else {
-                    for (pattern in patterns) {
-                        val similarity = getSimilarity(piece, pattern, tolerance)
-                        if (similarity >= threshold) {
-                            maxSimilarity = similarity
-                            break
-                        }
-                        if (similarity > maxSimilarity) maxSimilarity = similarity
+                } else for (pattern in patterns) {
+                    val similarity = getSimilarity(piece, pattern, tolerance)
+                    if (similarity >= threshold) {
+                        maxSimilarity = similarity
+                        break
                     }
+                    if (similarity > maxSimilarity) maxSimilarity = similarity
                 }
 
                 val matched = maxSimilarity >= threshold
@@ -81,17 +77,14 @@ object Feature {
 
             if (init) return
 
-            if (Setting.debug) {
-                val debugOutput = buildString {
-                    append("조각 인식 결과:\n")
-                    for (index in result.indices) {
-                        if (index > 0 && index % 2 == 0) append('\n')
-                        append(if (result[index]) "O" else "X")
-                        if (index % 2 == 0) append("    ")
-                    }
+            if (Setting.debug) buildString {
+                append("조각 인식 결과:\n")
+                for (index in result.indices) {
+                    if (index > 0 && index % 2 == 0) append('\n')
+                    append(if (result[index]) "O" else "X")
+                    if (index % 2 == 0) append("    ")
                 }
-                printDebug(debugOutput)
-            }
+            }.apply(::printDebug)
 
             if (count != 4) {
                 printErr("인식 실패: 인식된 조각 수가 4개가 아닙니다. (${count}개)")

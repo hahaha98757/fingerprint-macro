@@ -19,7 +19,7 @@ object InputHandler {
         val start = System.nanoTime()
         if (!test) for (key in keyList) inputKey(key)
         val elapsedTime = (System.nanoTime() - start) / 1_000_000.0
-        printDebug("1회 입력 평균 소요 시간: ${"%.2f".format(elapsedTime / keyList.size)}ms")
+        if (Setting.debug) printDebug("1회 입력 평균 소요 시간: ${"%.2f".format(elapsedTime / keyList.size)}ms")
     }
 
     private fun inputKey(key: Key) {

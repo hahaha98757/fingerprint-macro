@@ -26,6 +26,8 @@ object Setting {
         get() = debug && field
     var similarity = false
         get() = debug && field
+    var timeTaken = false
+        get() = debug && field
 
     fun loadSetting() {
         try {
@@ -44,6 +46,7 @@ object Setting {
             debug = false
             saveImage = false
             similarity = false
+            timeTaken = false
 
             val file = File(root, "setting.ini")
             loadFile(file)
@@ -72,6 +75,7 @@ object Setting {
                                 "debug" -> debug = value.toBoolean()
                                 "saveImage" -> saveImage = value.toBoolean()
                                 "similarity" -> similarity = value.toBoolean()
+                                "timeTaken" -> timeTaken = value.toBoolean()
                             }
                         } catch (_: Exception) {
                             printErr("알 수 없는 설정 값: $key = $value (기본값으로 설정됩니다.)")
@@ -94,6 +98,7 @@ object Setting {
             printDebug("debug: $debug")
             printDebug("saveImage: $saveImage")
             printDebug("similarity: $similarity")
+            printDebug("timeTaken: $timeTaken")
 
             actionForDepend()
             println("설정을 불러왔습니다.")
@@ -154,6 +159,7 @@ object Setting {
                 debug = false              ; 여러 디버그 메시지를 출력합니다. false인 경우 아래 설정은 무시됩니다.
                 saveImage = false          ; 감지한 이미지 저장
                 similarity = false         ; 유사도 표시
+                timeTaken = false          ; 소요 시간 표시
             """.trimIndent())
     }
 }
@@ -164,7 +170,7 @@ private fun getKeyCode(name: String): Int {
         val field = NativeKeyEvent::class.java.getField(fieldName)
         field.getInt(null)
     } catch (_: Exception) {
-        println("알 수 없는 키: $name")
+        printErr("알 수 없는 키: $name")
         0
     }
 }
