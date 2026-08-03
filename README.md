@@ -4,15 +4,15 @@
 GTA 온라인의 지문 매크로입니다.
 
 지원 정보<br>
+- 운영체제: Windows 10/11 x64
 - 게임 정보: Grand Theft Auto 5 레거시 및 인핸스드
 - 화면 형식: 경계 없는 창, 경계 없는 전체 화면, 또는 전체 화면
 
 ## 사용법
 1. 프로그램을 실행합니다.
-2. 해상도에 맞게 설정을 조정하고 설정을 다시 불러옵니다.
+2. 설정 파일에서 알맞은 디스플레이를 선택하고 설정을 다시 불러옵니다. (해상도 자동 감지)
 3. 적어도 지문 조각이 있는 부분은 가려지지 않아야 하며, GTA5 창이 디스플레이 전체를 채우고 있어야 합니다.
-4. 단축키(기본값 'F7')를 눌러 테스트를 할 수 있습니다.
-5. 단축키(기본값 'F6')를 눌러 매크로를 작동시킵니다.
+4. GTA V 창에 포커스를 둔 상태에서 단축키(기본값 'F6')를 눌러 매크로를 작동시킵니다.
 
 ## 설정
 설정은 setting.ini 파일에 저장됩니다. 프로그램 실행 시 생성되며, exe 파일의 경우 app 폴더에 있습니다.
@@ -23,18 +23,19 @@ GTA 온라인의 지문 매크로입니다.
   - display: 감지할 모니터입니다. 1부터 시작합니다.
   - pressingTimes: 키를 누르고 있는 시간입니다. 단위는 밀리초(1 밀리초 = 0.001 초)입니다. 오차가 발생할 수 있으며 0 이하는 대기 코드를 건너 뜁니다.
   - inputDelays: 키를 때고, 다음 키를 누르기 까지 대기하는 시간입니다.
-- layout: 해상도 설정입니다.
-  - width: 디스플레이의 너비입니다.
-  - height: 디스플레이의 높이입니다.
+  - stableDelays: 입력 최소 지연 시간입니다. pressingTimes와 inputDelays가 최소 이 시간동안 추가 지연을 가집니다.
+  - tolerance: 이미지의 픽셀 비교 허용 오차입니다. 두 픽셀의 평균 밝기 차이가 이 값보다 작거나 같으면 같은 픽셀로 간주합니다. 0~255 사이의 값입니다.
+  - threshold: 이미지의 유사도 임계값입니다. 감지한 이미지와 지문 조각의 유사도가 이 값보다 크거나 같으면 같은 지문으로 간주합니다. 0~1 사이의 값입니다.
 - hotkey: 단축키 설정입니다. 키의 이름은 [여기](https://javadoc.io/static/com.1stleg/jnativehook/2.1.0/org/jnativehook/keyboard/NativeKeyEvent.html) 에서 'VC_' 뒤의 이름을 "있는 그대로" 사용합니다.
   - exit: 매크로를 종료하는 단축키입니다.
   - reload: 설정을 다시 불러오는 단축키입니다.
   - start: 매크로를 실행시키는 단축키입니다.
   - test: 키 입력을 테스트하는 단축키입니다.
 - debug: 디버그 모드입니다.
-  - debug: 디버그 모드를 활성화합니다.
+  - debug: 디버그 모드를 활성화하며 여러 디버그 메시지를 출력합니다. false인 경우 아래 설정은 무시됩니다.
   - saveImage: 감지한 이미지를 저장합니다.
   - similarity: 각 지문 조각의 유사도를 출력합니다.
+  - timeTaken: 매크로 동작의 소요 시간과 각 키 입력에 소요된 시간을 출력합니다.
 
 
 ## 라이선스
@@ -42,12 +43,29 @@ GTA 온라인의 지문 매크로입니다.
 <br>라이선스 및 저작권 고지 하에 개인적 이용, 수정, 배포, 상업적 이용이 가능하며 보증 및 책임을 지지 않습니다.
 
 ## 크레딧
+- java-native-access의 [JNA](https://github.com/java-native-access/jna/tree/5.17.0) ([아파치 라이선스 2.0](https://github.com/java-native-access/jna/blob/5.17.0/AL2.0))
 - kwhat의 [JNativeHook](https://github.com/kwhat/jnativehook/tree/2.2.2) ([GNU 약소 일반 공중 사용 라이선스 v3.0](licenses/JNativeHook-LICENSE))
 - JetBrains의 [Kotlin](https://github.com/JetBrains/kotlin) ([아파치 라이선스 2.0](https://github.com/JetBrains/kotlin/blob/master/license/LICENSE.txt))
 
 ----
 
 ## 업데이트 로그
+
+### 1.3.0
+- 설정 변경
+  - 설정 파일 버전 업: 1 -> 2
+  - 해상도를 자동 감지하도록 변경.
+  - stableDelays 옵션 추가.
+  - pressingTimes와 inputDelays의 기본값을 10에서 0으로 변경.
+  - 일부 메시지를 디버그 모드에서 출력.
+- 디버그 모드: 소요 시간 출력 옵션 추가.
+- 최적화
+  - 키 입력을 Windows API로 변경.
+  - 불필요한 스레드 생성 제거.
+  - 디버그 모드가 아닐 때 불필요한 연산 생략
+  - 디버그 모드가 아닐 때 이미지 비교 중 조건 만족 시 즉시 종료.
+- 일부 출력 메시지 제거.
+
 
 ### 1.2.0
 - 코드 수정
