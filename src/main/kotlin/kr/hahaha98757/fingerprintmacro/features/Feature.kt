@@ -93,7 +93,7 @@ object Feature {
 
             InputHandler.run(result, test)
             val elapsedTime = (System.nanoTime() - start) / 1_000_000.0
-            printDebug("소요 시간: ${"%.2f".format(elapsedTime)}ms")
+            if (Setting.timeTaken) printDebug("소요 시간: ${"%.2f".format(elapsedTime)}ms")
             if (!test) println("매크로 실행 완료")
             else println("테스트 완료")
             println()

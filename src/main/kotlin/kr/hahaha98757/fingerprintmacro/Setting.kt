@@ -11,8 +11,9 @@ object Setting {
     const val VERSION = 2
 
     var display = 1
-    var pressingTimes = 20L
-    var inputDelays = 20L
+    var pressingTimes = 0L
+    var inputDelays = 0L
+    var stableDelays = 20L
     var tolerance = 30
     var threshold = 0.8
 
@@ -35,8 +36,9 @@ object Setting {
 
             println("설정을 불러오는 중...")
             display = 1
-            pressingTimes = 20
-            inputDelays = 20
+            pressingTimes = 0
+            inputDelays = 0
+            stableDelays = 20
             tolerance = 30
             threshold = 0.8
             exit = NativeKeyEvent.VC_F4
@@ -66,6 +68,7 @@ object Setting {
                                 "display" -> display = value.toInt()
                                 "pressingTimes" -> pressingTimes = value.toLong()
                                 "inputDelays" -> inputDelays = value.toLong()
+                                "stableDelays" -> stableDelays = value.toLong()
                                 "tolerance" -> tolerance = value.toInt()
                                 "threshold" -> threshold = value.toDouble()
                                 "exit" -> exit = getKeyCode(value)
@@ -87,6 +90,7 @@ object Setting {
             printDebug("display: $display")
             printDebug("pressingTimes: $pressingTimes")
             printDebug("inputDelays: $inputDelays")
+            printDebug("stableDelays: $stableDelays")
             printDebug("tolerance: $tolerance")
             printDebug("threshold: $threshold")
             printDebug()
@@ -135,6 +139,7 @@ object Setting {
         file.createNewFile()
         file.writeText("""
                 # # 또는 ; 뒤에 오는 내용은 주석으로 처리되며 공백은 무시됩니다.
+                # true는 켜짐, false는 꺼짐을 의미합니다.
                 
                 # 수정 금지
                 [doNotEdit]
@@ -142,8 +147,9 @@ object Setting {
                 
                 [general]
                 display = 1                ; 감지할 모니터
-                pressingTimes = 20         ; 키를 누르고 있는 시간 (밀리초)
-                inputDelays = 20           ; 키 입력 간 지연 시간 (밀리초)
+                pressingTimes = 0          ; 키를 누르고 있는 시간 (밀리초)
+                inputDelays = 0            ; 키 입력 간 지연 시간 (밀리초)
+                stableDelays = 20           ; 입력 최소 지연 시간 (밀리초). pressingTimes와 inputDelays가 최소 이 시간동안 추가 지연을 가집니다.
                 tolerance = 30             ; 이미지의 픽셀 비교 허용 오차 (0~255)
                 threshold = 0.8            ; 이미지 유사도 임계값 (0: 0%, 1: 100%)
 

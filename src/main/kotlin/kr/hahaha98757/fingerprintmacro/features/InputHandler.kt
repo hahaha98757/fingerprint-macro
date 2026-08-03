@@ -19,16 +19,13 @@ object InputHandler {
         val start = System.nanoTime()
         if (!test) for (key in keyList) inputKey(key)
         val elapsedTime = (System.nanoTime() - start) / 1_000_000.0
-        if (Setting.debug) printDebug("1회 입력 평균 소요 시간: ${"%.2f".format(elapsedTime / keyList.size)}ms")
+        if (Setting.timeTaken) printDebug("1회 입력 평균 소요 시간: ${"%.2f".format(elapsedTime / keyList.size)}ms")
     }
 
     private fun inputKey(key: Key) {
-        if (Setting.pressingTimes <= 0) sendBatch(key.scanCode)
-        else {
-            send(key.scanCode, false)
-            Thread.sleep(Setting.pressingTimes)
-            send(key.scanCode, true)
-        }
+        send(key.scanCode, false)
+        if (Setting.pressingTimes > 0) Thread.sleep(Setting.pressingTimes)
+        send(key.scanCode, true)
         if (Setting.inputDelays > 0) Thread.sleep(Setting.inputDelays)
     }
 
@@ -36,6 +33,7 @@ object InputHandler {
     private val inputs = WinUser.INPUT().toArray(2) as Array<WinUser.INPUT>
 
     private fun send(scanCode: Int, keyUp: Boolean) {
+        val start = System.nanoTime()
         val input = inputs[0]
         input.type = WinDef.DWORD(WinUser.INPUT.INPUT_KEYBOARD.toLong())
         input.input.setType("ki")
@@ -44,25 +42,9 @@ object InputHandler {
         input.input.ki.dwFlags = WinDef.DWORD(0x0008L or if (keyUp) 0x0002L else 0L)
 
         User32.INSTANCE.SendInput(WinDef.DWORD(1), inputs, input.size())
-    }
-
-    private fun sendBatch(scanCode: Int) {
-        val down = inputs[0]
-        val up = inputs[1]
-
-        down.type = WinDef.DWORD(WinUser.INPUT.INPUT_KEYBOARD.toLong())
-        down.input.setType("ki")
-        down.input.ki.wVk = WinDef.WORD(0)
-        down.input.ki.wScan = WinDef.WORD(scanCode.toLong())
-        down.input.ki.dwFlags = WinDef.DWORD(0x0008L or 0L)
-
-        up.type = WinDef.DWORD(WinUser.INPUT.INPUT_KEYBOARD.toLong())
-        up.input.setType("ki")
-        up.input.ki.wVk = WinDef.WORD(0)
-        up.input.ki.wScan = WinDef.WORD(scanCode.toLong())
-        up.input.ki.dwFlags = WinDef.DWORD(0x0008L or 0x0002L)
-
-        User32.INSTANCE.SendInput(WinDef.DWORD(2), inputs, down.size())
+        val end = System.nanoTime()
+        val elapsedTime = (end - start) / 1_000_000L
+        if (Setting.stableDelays > elapsedTime) Thread.sleep(Setting.stableDelays - elapsedTime)
     }
 
     fun init() {
